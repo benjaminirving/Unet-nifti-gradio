@@ -19,6 +19,6 @@ def sepia(input_img, dropdown):
     return slice1_float, slice1_float
 
 
-demo = gr.Interface(sepia, ["file", gr.Dropdown(['UNET', 'UNETR'])], ["image", "image"], live=True)
+demo = gr.Interface(sepia, ["file", gr.Dropdown(['UNET', 'UNETR'])], ["image", "image"], live=False)
 
 demo.launch(share=False)
