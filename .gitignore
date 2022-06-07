@@ -1,2 +1,4 @@
 venv/
 flagged/
+test_data/
+tmp/

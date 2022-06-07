@@ -1,3 +1,9 @@
+"""
+
+Hello world nifti
+
+"""
+
 import numpy as np
 import nibabel as nib
 import gradio as gr
@@ -15,4 +21,4 @@ def sepia(input_img, dropdown):
 
 demo = gr.Interface(sepia, ["file", gr.Dropdown(['UNET', 'UNETR'])], ["image", "image"], live=True)
 
-demo.launch()
+demo.launch(share=False)
