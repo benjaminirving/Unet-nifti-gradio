@@ -41,6 +41,7 @@ import torch
 
 import trimesh
 from skimage import measure
+from skimage import morphology
 from matplotlib.colors import ColorConverter
 
 print_config()
@@ -73,7 +74,11 @@ def generate_mesh_from_seg(segmentation: torch.tensor):
         segmentaton (torch.tensor): volumetric segmentaton
     """
 
-    segmentation_numpy = torch.argmax(segmentation, dim=1).squeeze().detach().cpu().numpy()
+    # Add cleanup of segmentation
+    segmentation_numpy = torch.argmax(segmentation, dim=1).squeeze().detach().cpu().numpy().astype(int) 
+    seg_label = morphology.label(segmentation_numpy)
+    seg_label = morphology.remove_small_objects(seg_label, 10000)
+    segmentation_numpy[seg_label == 0]=0
 
     print("Running marching cubes")
     verts, faces, normals, values = measure.marching_cubes(segmentation_numpy, 0)
@@ -89,12 +94,6 @@ def generate_mesh_from_seg(segmentation: torch.tensor):
     print("Completed smoothing")
     surf_mesh.export('mesh_test.obj')
     print("completed export")
-
-
-
-    surface_mesh=None
-    return surface_mesh
-
 
 def process_case(case_path: str, model_type: str = 'unet'):
     """
