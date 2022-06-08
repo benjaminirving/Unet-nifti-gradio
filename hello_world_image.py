@@ -18,6 +18,7 @@ def sepia(input_img, dropdown):
 
     return slice1_float, slice1_float
 
-demo = gr.Interface(sepia, ["file", gr.Dropdown(['UNET', 'UNETR'])], ["image", "image"], live=False, title="Organ segmentation with UNET/UNETR")
+demo = gr.Interface(sepia, ["file", gr.Dropdown(['UNET', 'UNETR'])], ["image", "image"], live=False, 
+    title="Organ segmentation with UNET/UNETR")
 
 demo.launch(share=False)

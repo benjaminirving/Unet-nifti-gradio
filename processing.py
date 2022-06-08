@@ -39,6 +39,9 @@ from monai.data import (
 
 import torch
 
+import trimesh
+from skimage import measure
+
 print_config()
 
 # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -61,6 +64,27 @@ val_transforms = Compose(
         ToTensord(keys=["image"]),
     ]
 )
+
+def generate_mesh_from_seg(segmentation: torch.tensor):
+    """Generate a mesh from the output segmentaton
+
+    Args:
+        segmentaton (torch.tensor): volumetric segmentaton
+    """
+
+    segmentation_numpy = torch.argmax(segmentation, dim=1).squeeze().detach().cpu().numpy()
+
+    print("Running marching cubes")
+    verts, faces, normals, values = measure.marching_cubes(segmentation_numpy, 0)
+    print("Completed marching cubes")
+    surf_mesh = trimesh.Trimesh(verts, faces, validate=True)
+    print("Completed trimesh")
+    surf_mesh.export('mesh_test.obj')
+    print("completed export")
+
+    surface_mesh=None
+    return surface_mesh
+
 
 def process_case(case_path: str, model_type: str = 'unet'):
     """
@@ -97,6 +121,7 @@ def process_case(case_path: str, model_type: str = 'unet'):
         print('No such model')
         return 0
     
+    #  Extracting info and running model
     img = val_ds[0]["image"].to(device)
     print(f"Images shape: {img.shape}")
     img_name = os.path.split(val_ds[0]["image_meta_dict"]["filename_or_obj"])[1]
@@ -105,12 +130,12 @@ def process_case(case_path: str, model_type: str = 'unet'):
     # val_outputs = sliding_window_inference(
     #     val_inputs, (96, 96, 96), 1, model, overlap=0.8
     # )
-
     # slice1 = 134
     slice1 = 150
+    segmentation = model(val_inputs)
 
-    val_outputs = model(val_inputs)
-    print('Model finished')
+    # Test plot
+    print('Model finished - running test plot')
     plt.figure("check", (18, 6))
     plt.subplot(1, 2, 1)
     plt.title("image")
@@ -118,9 +143,13 @@ def process_case(case_path: str, model_type: str = 'unet'):
     plt.subplot(1, 2, 2)
     plt.title("output")
     plt.imshow(
-        torch.argmax(val_outputs, dim=1).detach().cpu()[0, :, :, slice1]
+        torch.argmax(segmentation, dim=1).detach().cpu()[0, :, :, slice1]
     )
     plt.savefig('test.jpg')
+
+    generate_mesh_from_seg(segmentation)
+
+    return segmentation
 
 
 if __name__ == "__main__":
@@ -130,5 +159,5 @@ if __name__ == "__main__":
 
     path1 = 'test_data/liver_118.nii.gz'
     # path1 = '/home/ben/Code/gradio_test/test_data/btcv_imagesTs_img0002.nii.gz'
-    process_case(path1)
+    seg = process_case(path1)
 
