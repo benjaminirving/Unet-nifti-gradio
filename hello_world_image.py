@@ -16,9 +16,9 @@ def sepia(input_img, dropdown):
     slice1 = np.squeeze(data[:, :, 200])
     slice1_float = (slice1 - np.min(slice1)) /(np.max(slice1) - np.min(slice1)) 
 
-    return slice1_float, slice1_float
+    return slice1_float, slice1_float, "mesh_test.obj"
 
-demo = gr.Interface(sepia, ["file", gr.Dropdown(['UNET', 'UNETR'])], ["image", "image"], live=False, 
+demo = gr.Interface(sepia, ["file", gr.Dropdown(['UNET', 'UNETR'])], ["image", "image", gr.Model3D()], live=False, 
     title="Organ segmentation with UNET/UNETR")
 
 demo.launch(share=False)
