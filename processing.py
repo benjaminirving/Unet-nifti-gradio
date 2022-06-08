@@ -95,6 +95,8 @@ def generate_mesh_from_seg(segmentation: torch.tensor):
     surf_mesh.export('mesh_test.obj')
     print("completed export")
 
+    return segmentation_numpy, trimesh
+
 def process_case(case_path: str, model_type: str = 'unet'):
     """
     Process a single case using MONAI
@@ -144,19 +146,19 @@ def process_case(case_path: str, model_type: str = 'unet'):
     segmentation = model(val_inputs)
 
     # Test plot
-    print('Model finished - running test plot')
-    plt.figure("check", (18, 6))
-    plt.subplot(1, 2, 1)
-    plt.title("image")
-    plt.imshow(val_inputs.cpu().numpy()[0, 0, :, :, slice1], cmap="gray")
-    plt.subplot(1, 2, 2)
-    plt.title("output")
-    plt.imshow(
-        torch.argmax(segmentation, dim=1).detach().cpu()[0, :, :, slice1]
-    )
-    plt.savefig('test.jpg')
+    # print('Model finished - running test plot')
+    # plt.figure("check", (18, 6))
+    # plt.subplot(1, 2, 1)
+    # plt.title("image")
+    # plt.imshow(val_inputs.cpu().numpy()[0, 0, :, :, slice1], cmap="gray")
+    # plt.subplot(1, 2, 2)
+    # plt.title("output")
+    # plt.imshow(
+    #     torch.argmax(segmentation, dim=1).detach().cpu()[0, :, :, slice1]
+    # )
+    # plt.savefig('test.jpg')
 
-    generate_mesh_from_seg(segmentation)
+    segmentation, trimesh = generate_mesh_from_seg(segmentation)
 
     return segmentation
 
