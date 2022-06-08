@@ -4,6 +4,7 @@ Main file for processing a particular case using a trained model
 
 """
 import os
+import numpy as np
 
 import tempfile
 import matplotlib.pyplot as plt
@@ -116,6 +117,7 @@ def process_case(case_path: str, model_type: str = 'unet'):
     # Define the model
     if model_type == 'unet':
         # Define a UNET
+        print("Using UNET")
         model = BasicUNet(
             in_channels=1,
             out_channels=14,
@@ -127,7 +129,23 @@ def process_case(case_path: str, model_type: str = 'unet'):
 
     elif model_type == 'unetr':
         # Load UNETR
-        x=1
+        model = UNETR(
+            in_channels=1,
+            out_channels=14,
+            img_size=(96, 96, 96),
+            feature_size=16,
+            hidden_size=768,
+            mlp_dim=3072,
+            num_heads=12,
+            pos_embed="perceptron",
+            norm_name="instance",
+            res_block=True,
+            dropout_rate=0.0,
+        ).to(device)
+
+        model_name_epoch = "models/unetr_btcv_segmentation11000.pth" 
+        model.load_state_dict(torch.load(model_name_epoch, map_location=device))
+        model.eval()
     else:
         print('No such model')
         return 0
@@ -145,22 +163,16 @@ def process_case(case_path: str, model_type: str = 'unet'):
     slice1 = 150
     segmentation = model(val_inputs)
 
-    # Test plot
-    # print('Model finished - running test plot')
-    # plt.figure("check", (18, 6))
-    # plt.subplot(1, 2, 1)
-    # plt.title("image")
-    # plt.imshow(val_inputs.cpu().numpy()[0, 0, :, :, slice1], cmap="gray")
-    # plt.subplot(1, 2, 2)
-    # plt.title("output")
-    # plt.imshow(
-    #     torch.argmax(segmentation, dim=1).detach().cpu()[0, :, :, slice1]
-    # )
-    # plt.savefig('test.jpg')
-
     segmentation, trimesh = generate_mesh_from_seg(segmentation)
+    masked = np.ma.masked_where(segmentation == 0, segmentation)
 
-    return segmentation
+    im_path = "test.jpg"
+    print('Model finished - running test plot')
+    plt.imshow(val_inputs.cpu().numpy()[0, 0, :, :, slice1], cmap="gray")
+    plt.imshow(masked[:, :, slice1])
+    plt.savefig(im_path)
+
+    return segmentation, im_path
 
 
 if __name__ == "__main__":
@@ -170,5 +182,5 @@ if __name__ == "__main__":
 
     path1 = 'test_data/liver_118.nii.gz'
     # path1 = '/home/ben/Code/gradio_test/test_data/btcv_imagesTs_img0002.nii.gz'
-    seg = process_case(path1)
+    seg = process_case(path1, model_type="unetr")
 
