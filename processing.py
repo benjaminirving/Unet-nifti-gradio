@@ -75,14 +75,18 @@ def generate_mesh_from_seg(segmentation: torch.tensor):
         segmentaton (torch.tensor): volumetric segmentaton
     """
 
-    # Add cleanup of segmentation
-    segmentation_numpy = torch.argmax(segmentation, dim=1).squeeze().detach().cpu().numpy().astype(int) 
+    # Add cleanup of segmentation 
+    segmentation_numpy = segmentation.detach().cpu().numpy().astype(int) 
     seg_label = morphology.label(segmentation_numpy)
     seg_label = morphology.remove_small_objects(seg_label, 10000)
     segmentation_numpy[seg_label == 0]=0
+    # sn = np.flipud(segmentation_numpy)
+    sn = np.rot90(segmentation_numpy, k=3, axes=(1,2))
+    sn = np.rot90(sn, k=1, axes=(0,2))
 
     print("Running marching cubes")
-    verts, faces, normals, values = measure.marching_cubes(segmentation_numpy, 0)
+
+    verts, faces, normals, values = measure.marching_cubes(sn, 0)
     jet = plt.get_cmap('jet')
     rgb = jet(values/values.max())
     print("Completed marching cubes")
@@ -162,15 +166,20 @@ def process_case(case_path: str, model_type: str = 'unet'):
     # slice1 = 134
     slice1 = 150
     segmentation = model(val_inputs)
+    # Rotate the image to match
+    segmentation = torch.rot90(torch.argmax(segmentation, dim=1).squeeze(), dims=[0, 1])
+    img = torch.rot90(img.squeeze(), dims=[0, 1])
+
 
     segmentation, trimesh = generate_mesh_from_seg(segmentation)
     masked = np.ma.masked_where(segmentation == 0, segmentation)
 
     im_path = "test.jpg"
     print('Model finished - running test plot')
-    plt.imshow(val_inputs.cpu().numpy()[0, 0, :, :, slice1], cmap="gray")
+    plt.imshow(img.cpu().numpy()[:, :, slice1], cmap="gray")
     plt.imshow(masked[:, :, slice1])
-    plt.savefig(im_path)
+    plt.axis('off')
+    plt.savefig(im_path, bbox_inches='tight')
 
     return segmentation, im_path
 
@@ -182,5 +191,5 @@ if __name__ == "__main__":
 
     path1 = 'test_data/liver_118.nii.gz'
     # path1 = '/home/ben/Code/gradio_test/test_data/btcv_imagesTs_img0002.nii.gz'
-    seg = process_case(path1, model_type="unetr")
+    seg = process_case(path1, model_type="unet")
 

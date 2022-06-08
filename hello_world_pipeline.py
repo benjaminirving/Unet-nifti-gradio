@@ -1,6 +1,6 @@
 """
 
-Hello world nifti
+Test pipeline for loading a CT scan
 
 """
 
@@ -22,9 +22,12 @@ def segment_organs(input_img, dropdown):
     slice1 = np.squeeze(segmentation[:, :, slice1_num])
     slice1_float = (slice1 - np.min(slice1)) /(np.max(slice1) - np.min(slice1)) 
 
-    return "mesh_test.obj", im_path, slice1_float
+    return "mesh_test.obj", im_path
 
-demo = gr.Interface(segment_organs, ["file", gr.Dropdown(['UNET', 'UNETR'])], [gr.Model3D(), "image", "image"], live=False, 
+demo = gr.Interface(segment_organs, 
+    ["file", gr.Dropdown(['UNET', 'UNETR'], label="Model")], 
+    [gr.Model3D(), "image"], 
+    live=False, 
     title="Organ segmentation with UNET/UNETR")
 
 demo.launch(share=False)
