@@ -86,17 +86,17 @@ def generate_mesh_from_seg(segmentation: torch.tensor):
 
     print("Running marching cubes")
 
-    verts, faces, normals, values = measure.marching_cubes(sn, 0)
+    verts, faces, normals, values = measure.marching_cubes(sn, 0, step_size=2)
     jet = plt.get_cmap('jet')
     rgb = jet(values/values.max())
     print("Completed marching cubes")
     surf_mesh = trimesh.Trimesh(verts, faces, vertex_colors=rgb, validate=True)
     # surf_mesh = trimesh.voxel.ops.matrix_to_marching_cubes(segmentation_numpy)
     print("Completed trimesh")
-    is_smooth = False
-    if is_smooth:
-        trimesh.smoothing.filter_taubin(surf_mesh, iterations=10)
-    print("Completed smoothing")
+    # is_smooth = True
+    # if is_smooth:
+    #     trimesh.smoothing.filter_taubin(surf_mesh, iterations=10)
+    # print("Completed smoothing")
     surf_mesh.export('mesh_test.obj')
     print("completed export")
 
