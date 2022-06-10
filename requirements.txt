@@ -1,0 +1,6 @@
+gradio
+nibabel
+numpy
+pandas
+Pillow
+monai
