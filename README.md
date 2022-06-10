@@ -12,6 +12,10 @@ This repo explores using [Gradio](https://gradio.app/) with medical imaging mode
 - Get an automatic multi-organ segmentation
 - 3D mesh rendering of the segmentated organs
 
+Before:
+![](images/screenshot2.png)
+
+After dragging image:
 ![](images/screenshot1.png)
 *Data from the [Medical Image Decathlon](http://medicaldecathlon.com/) (CC-BY-SA)*
 
