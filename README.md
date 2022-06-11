@@ -12,6 +12,8 @@ This repo explores using [Gradio](https://gradio.app/) with medical imaging mode
 - Get an automatic multi-organ segmentation
 - 3D mesh rendering of the segmentated organs
 
+*Note that a trained model is not provided and this example requires the user train a model using the BTCV dataset (https://www.synapse.org/#!Synapse:syn3193805/discussion/default) and the notebook provided. In future I'll provide a demo with a trained model included using a dataset with known licencing*. 
+
 Before:
 ![](images/screenshot2.png)
 
